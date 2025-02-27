@@ -54,26 +54,27 @@ public class IngredientDao implements CrudRestaurantManagement<Ingredient> {
 
     @Override
     public Ingredient findByName(String ingredientId) {
-        if(connection!=null){
-            String select = "select ingredient_cost.id, ingredient.name, ingredient_cost.unit_price, ingredient_cost.unit, ingredient_cost.last_modification_date from ingredient" +
-                    " inner join ingredient_cost on ingredient.id=ingredient_cost.id where ingredient.id=?;";
-            try{
-                PreparedStatement preparedStatement = connection.prepareStatement(select);
-                preparedStatement.setInt(1, Integer.parseInt(ingredientId));
-                ResultSet resultSet = preparedStatement.executeQuery();
-                if (resultSet.next()){
-                    return new Ingredient(
-                            resultSet.getString("id"),
-                            resultSet.getString("name"),
-                            resultSet.getObject("last_modification_date", LocalDateTime.class),
-                            resultSet.getInt("unit_price"),
-                            unitMapper.mapFromResultSet(resultSet.getString("unit"))
-                    );
-                }
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
+//        if(connection!=null){
+//            String select = "select ingredient_cost.id, ingredient.name, ingredient_cost.unit_price, ingredient_cost.unit, ingredient_cost.last_modification_date from ingredient" +
+//                    " inner join ingredient_cost on ingredient.id=ingredient_cost.id where ingredient.id=?;";
+//            try{
+//                PreparedStatement preparedStatement = connection.prepareStatement(select);
+//                preparedStatement.setInt(1, Integer.parseInt(ingredientId));
+//                ResultSet resultSet = preparedStatement.executeQuery();
+//                if (resultSet.next()){
+//                    Array lastModificationDates = resultSet.getArray("last_modification_date");
+//                    return new Ingredient(
+//                        resultSet.getString("id"),
+//                        resultSet.getString("name"),
+//                        resultSet.getObject("last_modification_date", LocalDateTime.class),
+//                        resultSet.getInt("unit_price"),
+//                        unitMapper.mapFromResultSet(resultSet.getString("unit"))
+//                    );
+//                }
+//            } catch (Exception e) {
+//                throw new RuntimeException(e);
+//            }
+//        }
         return null;
     }
 
@@ -89,7 +90,7 @@ public class IngredientDao implements CrudRestaurantManagement<Ingredient> {
 
             try (PreparedStatement preparedStatement = connection.prepareStatement(upSertQuery)) {
                 Timestamp currentTimestamp = new Timestamp(System.currentTimeMillis());
-                double unitPrice = newIngredient.getUnitPrice();
+                double unitPrice = newIngredient.getUnitPrice().getFirst();
                 String unit = newIngredient.getUnit().name();
                 preparedStatement.setString(1, newIngredient.getId());
                 preparedStatement.setString(2, unit);

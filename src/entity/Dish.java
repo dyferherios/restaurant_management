@@ -54,7 +54,7 @@ public class Dish{
 
     public double getIngredientCost() {
         return ingredients.stream()
-                .map(e-> e.getUnitPrice()*e.getQuantity())
+                .map(e-> e.getUnitPrice().getLast()*e.getQuantity())
                 .reduce(0.0, Double::sum);
     }
 

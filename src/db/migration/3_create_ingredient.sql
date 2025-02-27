@@ -18,3 +18,6 @@ CREATE TABLE IF NOT EXISTS ingredient_cost(
     unit_price float,
     unit "UNIT"
 );
+
+ALTER TABLE ingredient_cost
+ADD CONSTRAINT unique_ingredient_cost UNIQUE (id);

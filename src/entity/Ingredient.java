@@ -12,6 +12,7 @@ public class Ingredient {
     private Unit unit;
 
     public Ingredient(){};
+
     public Ingredient(String id, String  name, List<LocalDateTime> lastModificationDate, List<Double> unitPrice, Unit unit){
         this.id = id;
         this.name = name;

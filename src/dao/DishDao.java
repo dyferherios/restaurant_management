@@ -9,6 +9,7 @@ import entity.Unit;
 
 import java.sql.*;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.sql.Connection;
 
@@ -19,122 +20,20 @@ public class DishDao implements CrudRestaurantManagement<Dish>{
 
     private final UnitMapper unitMapper = new UnitMapper();
 
-//    @Override
-//    public List<Dish> findAll(int page, int pageSize, List<Criteria> criterias) {
-//        List<Dish> dishes = new ArrayList<>();
-//        if(page < 1){
-//            throw new IllegalArgumentException("Page must be greater than 0 but actual page is " + page);
-//        }
-//        if(connection!=null){
-//            try {
-//                String select = "select id, name, unit_price from dish limit ? offset ?";
-//                PreparedStatement preparedStatement = connection.prepareStatement(select);
-//                preparedStatement.setInt(1, pageSize);
-//                preparedStatement.setInt(2, pageSize * (page - 1));
-//                try(ResultSet resultSet = preparedStatement.executeQuery()){
-//                    dishes = mapDishFromResultSet(resultSet);
-//                }
-//            } catch (SQLException e) {
-//                throw new RuntimeException(e);
-//            }
-//        }
-//        return dishes;
-//    }
-//
-//    private List<Dish> mapDishFromResultSet(ResultSet rs) throws SQLException {
-//        List<Dish> dishes = new ArrayList<>();
-//        while (rs.next()) {
-//            Dish dish = new Dish();
-//            dish.setId(rs.getString("id"));
-//            dish.setName(rs.getString("name"));
-//            dish.setUnitPrice(rs.getDouble("unit_price"));
-//            dish.setIngredients(findAllIngredientInsideADish(rs.getString("id")));
-//            dish.setProductPrice(dish.getIngredientCost());
-//            dishes.add(dish);
-//        }
-//        return dishes;
-//    }
-//
-//    public List<Ingredient> findAllIngredientInsideADish(String idDish){
-//        List<Ingredient> ingredients = new ArrayList<>();
-//        if(connection!=null){
-//            String select ="select ingredient.name, ingredient_cost.id,  ingredient_cost.unit_price, ingredient_cost.unit, ingredient_cost.last_modification_date, dish_ingredient.quantity from ingredient "+
-//            "join ingredient_cost on ingredient.id=ingredient_cost.id join dish_ingredient on ingredient.id=dish_ingredient.ingredient_id where dish_ingredient.dish_id=?;";
-//            try{
-//                PreparedStatement preparedStatement = connection.prepareStatement(select);
-//                preparedStatement.setString(1, idDish);
-//                try (ResultSet resultSet = preparedStatement.executeQuery()){
-//                    ingredients = mapIngredientFromResultSet(resultSet);
-//                }
-//            } catch (Exception e) {
-//                throw new RuntimeException(e);
-//            }
-//        }
-//        return ingredients;
-//    }
-//
-//    private List<Ingredient> mapIngredientFromResultSet(ResultSet rs) throws SQLException {
-//        List<Ingredient> ingredients = new ArrayList<>();
-//        while (rs.next()) {
-//            Ingredient ingredient = new Ingredient(
-//                    rs.getString("id"),
-//                    rs.getString("name"),
-//                    rs.getObject("last_modification_date", Timestamp.class).toLocalDateTime(),
-//                    rs.getInt("unit_price"),
-//                    rs.getDouble("quantity"),
-//                    unitMapper.mapFromResultSet(rs.getString("unit")));
-//            ingredients.add(ingredient);
-//        }
-//        return ingredients;
-//    }
-
     @Override
-    public List<Dish> findAll(int page, int pageSize, List<Criteria> criterias) {
+    public List<Dish> findAll(int page, int pageSize) {
         List<Dish> dishes = new ArrayList<>();
-        if (page < 1) {
+        if(page < 1){
             throw new IllegalArgumentException("Page must be greater than 0 but actual page is " + page);
         }
-
-        if (connection != null) {
+        if(connection!=null){
             try {
-                StringBuilder query = new StringBuilder("SELECT id, name, unit_price FROM dish");
-                List<Object> parameters = new ArrayList<>();
-
-                // Gestion des critères
-                if (criterias != null && !criterias.isEmpty()) {
-                    query.append(" WHERE ");
-                    List<String> conditions = new ArrayList<>();
-
-                    for (Criteria criteria : criterias) {
-                        switch (criteria.getColumn()) {
-                            case "nameDish":
-                                conditions.add("name LIKE ?");
-                                parameters.add("%" + criteria.getValue() + "%");
-                                break;
-                            case "unit_price_dish":
-                                conditions.add("unit_price <= ?");
-                                parameters.add(criteria.getValue());
-                                break;
-                            default:
-                                throw new IllegalArgumentException("Unknown criteria: " + criteria.getColumn());
-                        }
-                    }
-                    query.append(String.join(" AND ", conditions));
-                }
-
-                query.append(" LIMIT ? OFFSET ?");
-                parameters.add(pageSize);
-                parameters.add(pageSize * (page - 1));
-
-                PreparedStatement preparedStatement = connection.prepareStatement(query.toString());
-
-                // Remplissage des paramètres
-                for (int i = 0; i < parameters.size(); i++) {
-                    preparedStatement.setObject(i + 1, parameters.get(i));
-                }
-
-                try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                    dishes = mapDishFromResultSet(resultSet, criterias);
+                String select = "select id, name, unit_price from dish limit ? offset ?";
+                PreparedStatement preparedStatement = connection.prepareStatement(select);
+                preparedStatement.setInt(1, pageSize);
+                preparedStatement.setInt(2, pageSize * (page - 1));
+                try(ResultSet resultSet = preparedStatement.executeQuery()){
+                    dishes = mapDishFromResultSet(resultSet);
                 }
             } catch (SQLException e) {
                 throw new RuntimeException(e);
@@ -143,70 +42,29 @@ public class DishDao implements CrudRestaurantManagement<Dish>{
         return dishes;
     }
 
-    private List<Dish> mapDishFromResultSet(ResultSet rs, List<Criteria> criterias) throws SQLException {
+    private List<Dish> mapDishFromResultSet(ResultSet rs) throws SQLException {
         List<Dish> dishes = new ArrayList<>();
         while (rs.next()) {
             Dish dish = new Dish();
             dish.setId(rs.getString("id"));
             dish.setName(rs.getString("name"));
             dish.setUnitPrice(rs.getDouble("unit_price"));
-
-            // Récupérer les ingrédients avec les critères filtrants
-            List<Ingredient> ingredients = findAllIngredientInsideADish(rs.getString("id"), criterias);
-            dish.setIngredients(ingredients);
-
-            // Calculer le prix total en fonction des ingrédients récupérés
+            dish.setIngredients(findAllIngredientInsideADish(rs.getString("id")));
             dish.setProductPrice(dish.getIngredientCost());
-
             dishes.add(dish);
         }
         return dishes;
     }
 
-
-    public List<Ingredient> findAllIngredientInsideADish(String idDish, List<Criteria> criterias) {
+    public List<Ingredient> findAllIngredientInsideADish(String idDish){
         List<Ingredient> ingredients = new ArrayList<>();
-        if (connection != null) {
-            // Construction de la requête avec des critères
-            StringBuilder select = new StringBuilder("SELECT ingredient.name, ingredient_cost.id, ingredient_cost.unit_price, " +
-                    "ingredient_cost.unit, ingredient_cost.last_modification_date, " +
-                    "dish_ingredient.quantity " +
-                    "FROM ingredient " +
-                    "JOIN ingredient_cost ON ingredient.id = ingredient_cost.id " +
-                    "JOIN dish_ingredient ON ingredient.id = dish_ingredient.ingredient_id " +
-                    "WHERE dish_ingredient.dish_id = ? ");
-
-            List<Object> parameters = new ArrayList<>();
-            parameters.add(idDish);
-
-            // Appliquer les critères de filtrage sur les ingrédients
-            if (criterias != null && !criterias.isEmpty()) {
-                for (Criteria criteria : criterias) {
-                    switch (criteria.getColumn()) {
-                        case "nameIngredient":
-                            select.append("AND ingredient.name LIKE ? ");
-                            parameters.add("%" + criteria.getValue() + "%");
-                            break;
-                        case "last_modification_date":
-                            select.append("AND ingredient_cost.last_modification_date <= ? ");
-                            parameters.add(criteria.getValue());
-                            break;
-                        default:
-                            throw new IllegalArgumentException("Unknown criteria: " + criteria.getColumn());
-                    }
-                }
-            }
-
-            // Trier par date de modification et récupérer le dernier prix si aucune date n'est spécifiée
-            select.append("ORDER BY ingredient_cost.last_modification_date DESC");
-
-            try {
-                PreparedStatement preparedStatement = connection.prepareStatement(select.toString());
-                for (int i = 0; i < parameters.size(); i++) {
-                    preparedStatement.setObject(i + 1, parameters.get(i));
-                }
-
-                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+        if(connection!=null){
+            String select ="select ingredient.name, ingredient_cost.id,  ingredient_cost.unit_price, ingredient_cost.unit, ingredient_cost.last_modification_date, dish_ingredient.quantity from ingredient "+
+            "join ingredient_cost on ingredient.id=ingredient_cost.id join dish_ingredient on ingredient.id=dish_ingredient.ingredient_id where dish_ingredient.dish_id=?;";
+            try{
+                PreparedStatement preparedStatement = connection.prepareStatement(select);
+                preparedStatement.setString(1, idDish);
+                try (ResultSet resultSet = preparedStatement.executeQuery()){
                     ingredients = mapIngredientFromResultSet(resultSet);
                 }
             } catch (Exception e) {
@@ -216,67 +74,60 @@ public class DishDao implements CrudRestaurantManagement<Dish>{
         return ingredients;
     }
 
-
     private List<Ingredient> mapIngredientFromResultSet(ResultSet rs) throws SQLException {
         List<Ingredient> ingredients = new ArrayList<>();
-        Map<String, Ingredient> ingredientMap = new HashMap<>();
 
         while (rs.next()) {
-            String ingredientId = rs.getString("id");
-
-            // Récupérer les informations de l'ingrédient
-            String name = rs.getString("name");
-            LocalDateTime lastModificationDate = rs.getObject("last_modification_date", Timestamp.class).toLocalDateTime();
-            int unitPrice = rs.getInt("unit_price");
-            double quantity = rs.getDouble("quantity");
-            String unit = rs.getString("unit");
-
-            // Vérifier si cet ingrédient existe déjà dans le Map
-            if (ingredientMap.containsKey(ingredientId)) {
-                Ingredient existingIngredient = ingredientMap.get(ingredientId);
-                // Comparer les dates de modification et garder le plus récent
-                if (lastModificationDate.isAfter(existingIngredient.getLastModificationDate())) {
-                    // Mettre à jour l'ingrédient avec les nouvelles informations
-                    existingIngredient.setUnitPrice(unitPrice);
-                    existingIngredient.setQuantity(quantity);
-                    existingIngredient.setUnit(Unit.valueOf(unit));
-                    existingIngredient.setLastModificationDate(lastModificationDate);
+            List<LocalDateTime> modificationDates = new ArrayList<>();
+            Array sqlArrayDate = rs.getArray("last_modification_date");
+            if (sqlArrayDate != null) {
+                Timestamp[] timestamps = (Timestamp[]) sqlArrayDate.getArray();
+                for (Timestamp timestamp : timestamps) {
+                    modificationDates.add(timestamp.toLocalDateTime());
                 }
-            } else {
-                // Ajouter l'ingrédient si il n'est pas déjà dans la liste
-                Ingredient ingredient = new Ingredient(ingredientId, name, lastModificationDate, unitPrice, quantity, unitMapper.mapFromResultSet(unit));
-                ingredientMap.put(ingredientId, ingredient);
             }
-        }
 
-        // Ajouter tous les ingrédients dans la liste
-        ingredients.addAll(ingredientMap.values());
+            List<Double> unitPrices = new ArrayList<>();
+            Array sqlArrayPrice = rs.getArray("unit_price");
+            if (sqlArrayPrice != null) {
+                Double[] prices = (Double[]) sqlArrayPrice.getArray();
+                unitPrices = Arrays.asList(prices);
+            }
+
+            Ingredient ingredient = new Ingredient(
+                    rs.getString("id"),
+                    rs.getString("name"),
+                    modificationDates,
+                    unitPrices,
+                    rs.getDouble("quantity"),
+                    unitMapper.mapFromResultSet(rs.getString("unit"))
+            );
+            ingredients.add(ingredient);
+        }
         return ingredients;
     }
-
-
 
 
     @Override
     public Dish findByName(String dishName) {
         Dish dish = new Dish();
-//        if(connection!=null){
-//            try {
-//                String select = "select id, name, unit_price from dish where name = ?;";
-//                PreparedStatement preparedStatement = connection.prepareStatement(select);
-//                preparedStatement.setString(1, dishName);
-//                ResultSet resultSet = preparedStatement.executeQuery();
-//                if(resultSet.next()){
-//                    dish.setId(resultSet.getString("id"));
-//                    dish.setName(resultSet.getString("name"));
-//                    dish.setUnitPrice(resultSet.getDouble("unit_price"));
-//                    dish.setIngredients(findAllIngredientInsideADish(resultSet.getString("id")));
-//                    dish.setProductPrice(dish.getIngredientCost());
-//                }
-//            } catch (SQLException e) {
-//                throw new RuntimeException(e);
-//            }
-//        }
+        if(connection!=null){
+            try {
+                String select = "select id, name, unit_price from dish where name = ?;";
+                PreparedStatement preparedStatement = connection.prepareStatement(select);
+                preparedStatement.setString(1, dishName);
+                ResultSet resultSet = preparedStatement.executeQuery();
+                if(resultSet.next()){
+                    dish.setId(resultSet.getString("id"));
+                    dish.setName(resultSet.getString("name"));
+                    dish.setUnitPrice(resultSet.getDouble("unit_price"));
+                    dish.setIngredients(findAllIngredientInsideADish(resultSet.getString("id")));
+                    dish.setProductPrice(dish.getIngredientCost());
+                }
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
         return dish;
     }
 
@@ -341,7 +192,7 @@ public class DishDao implements CrudRestaurantManagement<Dish>{
         INSERT INTO dish_ingredient (dish_id, ingredient_id, quantity)
         VALUES (?, ?, ?)
         ON CONFLICT (dish_id, ingredient_id) DO UPDATE
-        SET quantity = EXCLUDED.quantity
+        SET quantity = EXCLUDED.quantity where dish_id = ? and ingredient_id=?
     """;
 
         try (PreparedStatement updateStatement = connection.prepareStatement(upsertQuery)) {
@@ -349,6 +200,8 @@ public class DishDao implements CrudRestaurantManagement<Dish>{
                 updateStatement.setString(1, dishId);
                 updateStatement.setString(2, ingredient.getId());
                 updateStatement.setDouble(3, ingredient.getQuantity());
+                updateStatement.setString(4, dishId);
+                updateStatement.setString(5, ingredient.getId());
                 updateStatement.addBatch();
             }
             updateStatement.executeBatch();
