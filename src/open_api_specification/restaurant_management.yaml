@@ -1,0 +1,223 @@
+openapi: '3.0.3'
+info:
+  title: Restaurant Management
+  version: '1.0.0'
+servers:
+  - url: https://localhost:8080
+paths:
+  /dish:
+    get:
+      tags:
+        - dish
+      summary : Get all dishes
+      responses :
+        200 :
+          description : OK
+          content :
+            application/json :
+              schema :
+                type : array
+                items :
+                  $ref : "#/components/schemas/Dish"
+    post: 
+      tags:
+        - dish
+      summary: Create new dish
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: 
+             $ref: '#/components/schemas/CreateDish'
+      responses:
+        201:
+          description: created
+          content:
+            application/json:
+              schema: 
+                $ref: '#/components/schemas/CreateDish'
+    put:
+      tags:
+        - dish
+      summary: update dish
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema: 
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: 
+              $ref: '#/components/schemas/CreateDish'
+            
+      responses:
+        201:
+          description: updated succefully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateDish'
+    delete:
+      tags: 
+        - dish
+      summary: delete dish
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema: 
+            type: string
+      responses:
+        204:
+          description: dish deleted succefully
+          content:
+            application/json:
+              schema: 
+                $ref: '#/components/schemas/CreateDish'
+
+  /ingredient:
+    get:
+      tags:
+        - ingredient
+      summary: get all ingredients
+      responses:
+        '200':
+          description: OK
+          content :
+            application/json :
+              schema :
+                type : array
+                items :
+                  $ref : "#/components/schemas/Ingredient"
+    post: 
+      tags:
+        - ingredient
+      summary: Create new ingredient
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: 
+             $ref: '#/components/schemas/CreateIngredient'
+      responses:
+        201:
+          description: created
+          content:
+            application/json:
+              schema: 
+                $ref: '#/components/schemas/CreateIngredient'
+    
+    delete:
+      tags: 
+        - ingredient
+      summary: delete ingredient
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema: 
+            type: string
+      responses:
+        204:
+          description: ingredient deleted succefully
+          content:
+            application/json:
+              schema: 
+                $ref: '#/components/schemas/CreateIngredient'
+    
+    put:
+      tags:
+        - ingredient
+      summary: update ingredient
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema: 
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: 
+              $ref: '#/components/schemas/CreateIngredient'
+            
+      responses:
+        201:
+          description: updated succefully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateIngredient'
+  /ingredient/dish:
+      get:
+        tags:
+        - ingredient in the dish
+        summary: get all ingredients in the specific dish
+        parameters:
+        - name: name
+          in: path
+          required: true
+          schema: 
+            type: string
+        responses:
+          '200':
+            description: OK
+            content: 
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Ingredient'
+
+components:
+  schemas:
+    CreateDish:
+        type: object
+        properties:
+          dishId: 
+            type: string
+          name:
+            type: string
+          unitPrice:
+            type: integer
+          ingredients:
+            type: array
+            items:
+              $ref: "#/components/schemas/CreateIngredient"
+
+    Dish: 
+      allOf:
+        - $ref: "#/components/schemas/CreateDish"
+
+    CreateIngredient:
+        type: object
+        properties:
+          ingredientId:
+            type: string
+          name:
+            type: string
+          update_datetime:
+            type: string
+            format: datetime
+          unitPrice:
+            type: integer
+          unit: 
+            type: string
+            enum:
+              - G
+              - L
+              - U
+    Ingredient: 
+        allOf:
+          - $ref: "#/components/schemas/CreateIngredient"
+    
+
+          
+
+    
+
+
