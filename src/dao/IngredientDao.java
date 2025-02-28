@@ -1,15 +1,15 @@
 package dao;
 
+import dao.mapper.Criteria;
 import dao.mapper.UnitMapper;
 import db.DataSource;
 import entity.Ingredient;
+import entity.Unit;
 
 import java.sql.*;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 public class IngredientDao implements CrudRestaurantManagement<Ingredient> {
     DataSource dataSource = new DataSource();
@@ -45,12 +45,66 @@ public class IngredientDao implements CrudRestaurantManagement<Ingredient> {
             ingredient.setId(rs.getString("id"));
             ingredient.setName(rs.getString("name"));
             ingredient.setUnit(unitMapper.mapFromResultSet(rs.getString("unit")));
-            ingredient.setUnitPrice(rs.getDouble("unit_price"));
-            ingredient.setLastModificationDate(rs.getObject("last_modification_date", LocalDateTime.class));
+
+            // Récupération du dernier prix connu (au lieu de rs.getArray("unit_price"))
+            double lastUnitPrice = rs.getDouble("last_unit_price");
+            ingredient.setUnitPrice(lastUnitPrice);
+
+            // Récupération de la dernière date de modification
+            Timestamp lastModificationTs = rs.getTimestamp("last_modification_date");
+            if (lastModificationTs != null) {
+                ingredient.setLastModificationDate(lastModificationTs.toLocalDateTime());
+            }
+
             ingredients.add(ingredient);
         }
         return ingredients;
     }
+
+
+    public List<Ingredient> filterByCriteria(int page, int pageSize, List<Criteria> criterias) throws SQLException {
+        StringBuilder sql = new StringBuilder("SELECT ic.id, i.name, ");
+        sql.append("ic.unit_price[array_length(ic.unit_price, 1)] AS last_unit_price, ");
+        sql.append("ic.unit, ic.last_modification_date[array_length(ic.last_modification_date, 1)] AS last_modification_date ");
+        sql.append("FROM ingredient i ");
+        sql.append("INNER JOIN ingredient_cost ic ON i.id = ic.id ");
+
+        if (criterias != null && !criterias.isEmpty()) {
+            sql.append("WHERE ");
+            for (int i = 0; i < criterias.size(); i++) {
+                Criteria criteria = criterias.get(i);
+                String column = criteria.getColumn();
+                Object value = criteria.getValue();
+                String operator = criteria.getOperator();
+                String logicalOperator = criteria.getLogicalOperator();
+
+                if (column.equals("unit_price")) {
+                    column = "ic.unit_price[array_length(ic.unit_price, 1)]";
+                } else if (column.equals("last_modification_date")) {
+                    column = "ic.last_modification_date[array_length(ic.last_modification_date, 1)]";
+                }
+                if (value instanceof String) {
+                    value = "'" + value + "'";
+                } else if (value instanceof LocalDateTime) {
+                    value = "'" + ((LocalDateTime) value).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) + "'";
+                }
+                sql.append(column).append(" ").append(operator).append(" ").append(value);
+                if (i < criterias.size() - 1) {
+                    sql.append(" ").append(logicalOperator).append(" ");
+                }
+            }
+        }
+        sql.append(" ORDER BY last_modification_date DESC");
+        sql.append(" LIMIT ").append(pageSize).append(" OFFSET ").append(page * pageSize);
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(sql.toString())) {
+            ResultSet rs = stmt.executeQuery();
+            return mapIngredientFromResultSet(rs);
+        }
+    }
+
+
+
 
     @Override
     public Ingredient findByName(String ingredientId) {
@@ -91,13 +145,14 @@ public class IngredientDao implements CrudRestaurantManagement<Ingredient> {
             try (PreparedStatement preparedStatement = connection.prepareStatement(upSertQuery)) {
                 Timestamp currentTimestamp = new Timestamp(System.currentTimeMillis());
                 double unitPrice = newIngredient.getUnitPrice().getFirst();
-                String unit = newIngredient.getUnit().name();
+                Unit unit = unitMapper.mapFromResultSet(newIngredient.getUnit().name());
                 preparedStatement.setString(1, newIngredient.getId());
-                preparedStatement.setString(2, unit);
+                preparedStatement.setString(2, String.valueOf(unit));
                 preparedStatement.setTimestamp(3, currentTimestamp);
                 preparedStatement.setDouble(4, unitPrice);
                 preparedStatement.setTimestamp(5, currentTimestamp);
                 preparedStatement.setDouble(6, unitPrice);
+                System.out.println(preparedStatement);
                 preparedStatement.executeUpdate();
                 return newIngredient;
             } catch (SQLException e) {

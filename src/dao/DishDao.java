@@ -97,8 +97,8 @@ public class DishDao implements CrudRestaurantManagement<Dish>{
             Ingredient ingredient = new Ingredient(
                     rs.getString("id"),
                     rs.getString("name"),
-                    modificationDates,
-                    unitPrices,
+                    List.of(modificationDates.getLast()),
+                    List.of(unitPrices.getLast()),
                     rs.getDouble("quantity"),
                     unitMapper.mapFromResultSet(rs.getString("unit"))
             );

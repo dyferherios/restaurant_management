@@ -49,6 +49,11 @@ public class Ingredient {
     public void setLastModificationDate(LocalDateTime newDate) {
         this.lastModificationDate.add(newDate);
     }
+
+    public void setUnitPrice(double newUnitPrice) {
+        this.unitPrice.add(newUnitPrice);
+    }
+
     public List<Double> getUnitPrice() {
         return unitPrice;
     }
@@ -70,19 +75,6 @@ public class Ingredient {
 
     public void setUnit(Unit unit) {
         this.unit = unit;
-    }
-
-    public static LocalDateTime getMostRecentDate(List<LocalDateTime> lastModificationDate) {
-        if (lastModificationDate == null || lastModificationDate.isEmpty()) {
-            return null;
-        }
-        Optional<LocalDateTime> mostRecent = lastModificationDate.stream()
-                .max(LocalDateTime::compareTo); // Compare les LocalDateTime
-        return mostRecent.orElse(null);
-    }
-
-    public void setUnitPrice(double unitPrice) {
-        this.unitPrice.add(unitPrice);
     }
 
     @Override

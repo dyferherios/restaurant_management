@@ -33,3 +33,38 @@ DROP COLUMN unit_price;
 
 ALTER TABLE ingredient_cost
 RENAME COLUMN unit_price_tmp TO unit_price;
+
+SELECT ingredient.id, ingredient.name,
+       MIN(price) AS unit_price
+FROM ingredient
+INNER JOIN ingredient_cost ON ingredient.id = ingredient_cost.id
+INNER JOIN LATERAL unnest(ingredient_cost.unit_price) AS price ON true
+WHERE ingredient.name ILIKE '%i%'
+GROUP BY ingredient.id, ingredient.name
+HAVING MIN(price) > 1000
+ORDER BY ingredient.name ASC, unit_price DESC;
+
+SELECT ic.id, i.name,
+       ic.unit_price[array_length(ic.unit_price, 1)] AS last_unit_price,
+       ic.unit,
+       ic.last_modification_date[array_length(ic.last_modification_date, 1)] AS last_modification_date
+FROM ingredient i
+INNER JOIN ingredient_cost ic ON i.id = ic.id
+WHERE ic.last_modification_date[array_length(ic.last_modification_date, 1)] > '2025-02-26 00:00:00'
+  AND i.name ILIKE '%e%'
+ORDER BY last_modification_date DESC
+LIMIT 10 OFFSET 0;
+
+SELECT ic.id, i.name,
+       ic.unit_price[array_length(ic.unit_price, 1)] AS last_unit_price,
+       ic.unit,
+       ic.last_modification_date[array_length(ic.last_modification_date, 1)] AS last_modification_date
+FROM ingredient i
+INNER JOIN ingredient_cost ic ON i.id = ic.id
+WHERE ic.last_modification_date[array_length(ic.last_modification_date, 1)] > '2025-02-25 00:00:00'
+  AND i.name ILIKE '%e%'
+  AND ic.unit_price[array_length(ic.unit_price, 1)] >= 1000
+  AND ic.unit = 'U'
+ORDER BY last_modification_date DESC
+LIMIT 10 OFFSET 0;
+
