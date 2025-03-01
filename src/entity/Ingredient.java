@@ -1,5 +1,6 @@
 package entity;
 
+import java.nio.channels.FileLock;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -8,18 +9,11 @@ public class Ingredient {
     private String name;
     private List<LocalDateTime> lastModificationDate = new ArrayList<>();
     private List<Double> unitPrice = new ArrayList<>();
+    private List<StockMovement> stockMovements;
     private double quantity;
     private Unit unit;
 
     public Ingredient(){};
-
-    public Ingredient(String id, String  name, List<LocalDateTime> lastModificationDate, List<Double> unitPrice, Unit unit){
-        this.id = id;
-        this.name = name;
-        this.lastModificationDate = lastModificationDate;
-        this.unitPrice = unitPrice;
-        this.unit = unit;
-    }
 
     public Ingredient(String id, String  name, List<LocalDateTime>  lastModificationDate, List<Double> unitPrice, double quantity, Unit unit){
         this.id = id;
@@ -28,6 +22,28 @@ public class Ingredient {
         this.unitPrice = unitPrice;
         this.quantity = quantity;
         this.unit = unit;
+    }
+
+    public List<StockMovement> getStockMovements() {
+        return stockMovements;
+    }
+
+    public void setStockMovements(List<StockMovement> stockMovements) {
+        this.stockMovements = stockMovements;
+    }
+
+    public double getAvailableQuantity(LocalDateTime date) {
+        List<StockMovement> stockMovementsTmp = this.getStockMovements().stream()
+                .filter(m -> m.getDate().isBefore(date) || m.getDate().isEqual(date)).toList();
+        double sum = 0.0;
+        for (StockMovement stockMovement : stockMovementsTmp) {
+            if (stockMovement.getType() == MovementType.IN) {
+                sum += stockMovement.getQuantity();
+            } else {
+                sum -= stockMovement.getQuantity();
+            }
+        }
+        return sum;
     }
 
     public String getId() {
@@ -46,12 +62,12 @@ public class Ingredient {
         return lastModificationDate;
     }
 
-    public void setLastModificationDate(LocalDateTime newDate) {
-        this.lastModificationDate.add(newDate);
+    public void setLastModificationDate(List<LocalDateTime> lastModificationDate) {
+        this.lastModificationDate = lastModificationDate;
     }
 
-    public void setUnitPrice(double newUnitPrice) {
-        this.unitPrice.add(newUnitPrice);
+    public void setUnitPrice(List<Double> unitPrice) {
+           this.unitPrice = unitPrice;
     }
 
     public List<Double> getUnitPrice() {

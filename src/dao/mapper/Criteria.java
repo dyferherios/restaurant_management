@@ -12,8 +12,8 @@ public class Criteria {
         this.column = column;
         this.value = value;
         this.operator = operator != null ? operator : "=";
-        this.logicalOperator = logicalOperator != null ? logicalOperator : "AND"; // Par défaut "AND"
-        this.order = order != null ? order : "ASC"; // Par défaut "ASC"
+        this.logicalOperator = logicalOperator != null ? logicalOperator : "AND";
+        this.order = order != null ? order : "ASC";
     }
 
     // Getters
@@ -35,5 +35,16 @@ public class Criteria {
 
     public String getOrder() {
         return order;
+    }
+
+    @Override
+    public String toString() {
+        return "Criteria{" +
+                "column='" + column + '\'' +
+                ", value=" + value +
+                ", operator='" + operator + '\'' +
+                ", logicalOperator='" + logicalOperator + '\'' +
+                ", order='" + order + '\'' +
+                '}';
     }
 }

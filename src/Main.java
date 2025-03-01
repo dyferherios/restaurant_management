@@ -1,10 +1,12 @@
 import dao.DishDao;
 //import dao.IngredientDao;
 import dao.IngredientDao;
+import dao.StockMovementDao;
 import dao.mapper.Criteria;
 import db.DataSource;
 import entity.Dish;
 import entity.Ingredient;
+import entity.StockMovement;
 import entity.Unit;
 
 import java.sql.SQLException;
@@ -19,27 +21,28 @@ public class Main {
         dataSource.getConnection();
         DishDao dishDao = new DishDao();
         IngredientDao ingredientDao = new IngredientDao();
-        //ingredientDao.findAll(1, 5);
+        StockMovementDao stockMovementDao = new StockMovementDao();
+        //System.out.println(stockMovementDao.findByIngredientId("I003"));;
+        //ingredientDao.findAll(1, 5).forEach(e -> System.out.println(e.toString()));
 
-        List<Criteria> criterias = new ArrayList<>();
-        criterias.add(new Criteria("name", "%e%", "ILIKE", "AND", null));  // Filtrer par nom avec un LIKE
-        criterias.add(new Criteria("unit_price", 1200, ">=", "AND", null));  // Filtrer par prix (dernière valeur du tableau >= 1000)
-        criterias.add(new Criteria("last_modification_date", LocalDateTime.of(2025, 2, 25, 0, 0), ">", "AND", null));  // Filtrer par date (dernière valeur du tableau > date donnée)
+//        List<Criteria> criterias = new ArrayList<>();
+//        criterias.add(new Criteria("name", "%e%", "ILIKE", "AND", "DESC"));
+//        criterias.add(new Criteria("last_modification_date", LocalDateTime.of(2025, 2, 25, 0, 0), ">", null, "DESC"));
+//        criterias.add(new Criteria("unit_price", 1000.0, "=", "AND", "ASC"));
+//
+//        List<Ingredient> ingredients = ingredientDao.filterByCriteria(2, 1, criterias);
+//        ingredients.forEach(e -> System.out.println(e.toString()));
 
-        List<Ingredient> filteredIngredients = ingredientDao.filterByCriteria(0, 10, criterias);
-        filteredIngredients.forEach(e -> System.out.println(e.toString()));
+//        Ingredient newEgg = new Ingredient();
+//        newEgg.setId("I003");  // ID unique pour l'ingrédient
+//        newEgg.setUnit(Unit.U);  // Assurez-vous d'utiliser l'unité correcte
+//        newEgg.setUnitPrice(1400.0);  // Utilisez le prix de 1400
+//        newEgg.setLastModificationDate(LocalDateTime.now());  // Date de modification actuelle
+//        Ingredient savedIngredient = ingredientDao.save(newEgg);  // Enregistrer l'ingrédient
 
-        Ingredient newEgg = new Ingredient();
-        newEgg.setId("I003");  // ID unique pour l'ingrédient
-        newEgg.setUnit(Unit.U);  // Assurez-vous d'utiliser l'unité correcte
-        newEgg.setUnitPrice(1400.0);  // Utilisez le prix de 1400
-        newEgg.setLastModificationDate(LocalDateTime.now());  // Date de modification actuelle
-
-        Ingredient savedIngredient = ingredientDao.save(newEgg);
-
-        //ingredientDao.findAll(1, 10).forEach(e -> System.out.println(e.toString()));
+        //dishDao.findAll(1, 10, LocalDateTime.now()).forEach(e -> System.out.println(e.toString()));
         //dishDao.findAllIngredientInsideADish(1).forEach(e -> System.out.println(e.toString()));
-        //dishDao.findAll(1, 2).forEach(e -> System.out.println(e.toString()));
+        // dishDao.findAll(1, 2).forEach(e -> System.out.println(e.toString()));
         //System.out.println(dishDao.findByName("hot dog"));
 
         //List<Ingredient> ingredients = new ArrayList<>();
@@ -61,6 +64,16 @@ public class Main {
 //        );
 //
 //        ingredientDao.save(newIngredient);
+
+//        StockMovementDao stockMovementDao = new StockMovementDao();
+//
+//        // Exemple : récupérer le mouvement de stock pour l'ingrédient "Oeuf" (ID = "I001")
+//            String ingredientId = "I001";
+//            List<StockMovement> movements = stockMovementDao.findByIngredientId("I001");
+//           movements.forEach(e -> System.out.println(e.toString()));
+//
+//            System.out.println(stockMovementDao.findByIngredientId("I001"));
+
     }
 }
 

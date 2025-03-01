@@ -1,9 +1,8 @@
 package entity;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.stream.IntStream;
 
 public class Dish{
     private String id;
@@ -52,11 +51,31 @@ public class Dish{
         return productPrice;
     }
 
-    public double getIngredientCost() {
+    public double getIngredientCost(LocalDateTime dateTime) {
         return ingredients.stream()
-                .map(e-> e.getUnitPrice().getLast()*e.getQuantity())
-                .reduce(0.0, Double::sum);
+                .mapToDouble(e -> {
+                    double unitPrice1 = getPriceAtDate(e.getUnitPrice(), e.getLastModificationDate(), dateTime);
+                    return unitPrice1 * e.getQuantity();
+                })
+                .sum();
     }
+
+
+    private Double getPriceAtDate(List<Double> unitPrices, List<LocalDateTime> lastModificationDates, LocalDateTime dateTime) {
+        if (unitPrices.isEmpty() || lastModificationDates.isEmpty()) return 0.0;
+        double lastValidPrice = unitPrices.getFirst();
+        for (int i = 0; i < lastModificationDates.size(); i++) {
+            if (!dateTime.isBefore(lastModificationDates.get(i))) {
+                lastValidPrice = unitPrices.get(i);
+            }
+        }
+        return lastValidPrice;
+    }
+
+    public Double getGrossMargin(LocalDateTime requestedDate){
+        return unitPrice - this.getIngredientCost(requestedDate!=null?requestedDate : LocalDateTime.now());
+    }
+
 
     public void setUnitPrice(double unitPrice) {
         this.unitPrice = unitPrice;
