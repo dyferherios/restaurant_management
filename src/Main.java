@@ -1,90 +1,66 @@
-import dao.DishDao;
-//import dao.IngredientDao;
-import dao.IngredientDao;
-import dao.StockMovementDao;
-import dao.mapper.Criteria;
-import db.DataSource;
-import entity.Dish;
-import entity.Ingredient;
-import entity.StockMovement;
-import entity.Unit;
+import dao.entity.Criteria.Criteria;
+import dao.entity.Ingredient;
+import dao.entity.Order;
+import dao.entity.Price;
+import dao.entity.StockMovement;
+import dao.operations.*;
 
+import java.sql.Date;
 import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.sql.SQLOutput;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class Main {
     public static void main(String[] args) throws SQLException {
-        DataSource dataSource = new DataSource();
-        dataSource.getConnection();
-        DishDao dishDao = new DishDao();
-        IngredientDao ingredientDao = new IngredientDao();
-        StockMovementDao stockMovementDao = new StockMovementDao();
-        //System.out.println(stockMovementDao.findByIngredientId("I003"));;
-        //ingredientDao.findAll(1, 5).forEach(e -> System.out.println(e.toString()));
+//        DishCrudOperations dishCrudOperations = new DishCrudOperations();
+//        System.out.println(dishCrudOperations.findById(1L).toString());
 
-//        List<Criteria> criterias = new ArrayList<>();
-//        criterias.add(new Criteria("name", "%e%", "ILIKE", "AND", "DESC"));
-//        criterias.add(new Criteria("last_modification_date", LocalDateTime.of(2025, 2, 25, 0, 0), ">", null, "DESC"));
-//        criterias.add(new Criteria("unit_price", 1000.0, "=", "AND", "ASC"));
+//        OrderCrudOperations orderCrudOperations = new OrderCrudOperations();
+//        //orderCrudOperations.getAll(1, 10).forEach(order -> System.out.println(order.toString()));
 //
-//        List<Ingredient> ingredients = ingredientDao.filterByCriteria(2, 1, criterias);
-//        ingredients.forEach(e -> System.out.println(e.toString()));
+//        System.out.println( Duration.between(Instant.parse("2025-02-25T07:00:00Z"), Instant.parse("2025-02-25T07:15:00Z")));
 
-//        Ingredient newEgg = new Ingredient();
-//        newEgg.setId("I003");  // ID unique pour l'ingrédient
-//        newEgg.setUnit(Unit.U);  // Assurez-vous d'utiliser l'unité correcte
-//        newEgg.setUnitPrice(1400.0);  // Utilisez le prix de 1400
-//        newEgg.setLastModificationDate(LocalDateTime.now());  // Date de modification actuelle
-//        Ingredient savedIngredient = ingredientDao.save(newEgg);  // Enregistrer l'ingrédient
+        IngredientCrudOperations ingredientCrudOperations = new IngredientCrudOperations();
+//
+//        ingredientCrudOperations.getAll(1, 10).forEach(ingredient -> System.out.println(ingredient.toString()));
+        PriceCrudOperations priceCrudOperations = new PriceCrudOperations();
+        List<Criteria> priceCriterias = List.of(
+                new Criteria("date", LocalDate.of(2025,3,17),"<",  "AND"),
+                new Criteria("date",LocalDate.of(2025,3,15), ">=", "AND"),
+                new Criteria("amount", 1020.0, ">=", "AND")
+        );
+        Map<String, String> mapPrice = Map.of();
+        List<Price> prices= priceCrudOperations.filterByIngredientIdAndCriteria(1L, priceCriterias, mapPrice);
+        System.out.println(prices.toString());
 
-        //dishDao.findAll(1, 10, LocalDateTime.now()).forEach(e -> System.out.println(e.toString()));
-        //dishDao.findAllIngredientInsideADish(1).forEach(e -> System.out.println(e.toString()));
-        // dishDao.findAll(1, 2).forEach(e -> System.out.println(e.toString()));
-        //System.out.println(dishDao.findByName("hot dog"));
+        StockMovementCrudOperations stockMovementCrudOperations = new StockMovementCrudOperations();
+        List<Criteria> stockMovementsCriterias = List.of(
+                new Criteria("date", LocalDate.of(2025,3,17),"<=",  "AND"),
+                new Criteria("date",LocalDate.of(2025,2,1), ">=", "AND"),
+                new Criteria("movement_type", "IN", "ilike", "AND")
+        );
 
-        //List<Ingredient> ingredients = new ArrayList<>();
-//        Ingredient ingredient0 = new Ingredient("I003", "egg", LocalDateTime.now(), 1000, 1, Unit.U);
-//        Ingredient ingredient1 = new Ingredient("I002", "oil", LocalDateTime.now(), 10000, 0.25, Unit.L);
-//        ingredients.add(ingredient0);
-//        ingredients.add(ingredient1);
-        //Dish newDish = new Dish("D002","homelette", 15000, ingredients);
-        //dishDao.save(newDish);
-        //dishDao.delete("D002");
-        //dishDao.findAll(1, 2).forEach(e -> System.out.println(e.toString()));
+        List<StockMovement> stockMovements = stockMovementCrudOperations.filterByIngredientIdByCriteria(1L, stockMovementsCriterias, mapPrice);
+        System.out.println(stockMovements.toString());
 
-//        Ingredient newIngredient = new Ingredient(
-//                "I005",  // ID de l'ingrédient
-//                "Tomato", // Nom de l'ingrédient
-//                LocalDateTime.now(), // Date de modification actuelle
-//                500, // Prix par unité
-//                Unit.U // Unité (Enum)
+//        List<Criteria> criterias = List.of(
+//                new Criteria("name", "o", "ILIKE", "AND"),
+//                new Criteria("required_quantity", 1000.0, ">=", "AND")
 //        );
-//
-//        ingredientDao.save(newIngredient);
 
-//        StockMovementDao stockMovementDao = new StockMovementDao();
+//        Map<String, String> sort = Map.of("i.name", "ASC");
 //
-//        // Exemple : récupérer le mouvement de stock pour l'ingrédient "Oeuf" (ID = "I001")
-//            String ingredientId = "I001";
-//            List<StockMovement> movements = stockMovementDao.findByIngredientId("I001");
-//           movements.forEach(e -> System.out.println(e.toString()));
-//
-//            System.out.println(stockMovementDao.findByIngredientId("I001"));
+//        List<Ingredient> result = ingredientCrudOperations.filterByCriteria(criterias, 1, 10, sort);
+//        result.forEach(ingredient -> System.out.println(ingredient.toString()));
 
     }
 }
-
-//Ingredient ingredient = new Ingredient(
-//        rs.getString("id"),
-//        rs.getString("name"),
-//        rs.getObject("last_modification_date", Timestamp.class).toLocalDateTime(),
-//        rs.getInt("unit_price"),
-//        rs.getDouble("quantity"),
-
-//
+//  
 //gest : RASOLOARINAIVO Bodohasina
 //        Bodohasina.RASOLOARINAIVO@bni.mg
 //        ag : 02022 667 00

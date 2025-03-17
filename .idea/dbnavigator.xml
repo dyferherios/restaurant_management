@@ -12,8 +12,8 @@
     <loaded-nodes />
   </component>
   <component name="DBNavigator.Project.DatabaseConsoleManager">
-    <connection id="d9c35fdd-c292-453c-a6ac-67919770ba9d">
-      <console name="Connection" type="STANDARD" schema="restaurant_management" session="Main" />
+    <connection id="d880bb83-000f-42e1-b6f4-f43220069e09">
+      <console name="Connection" type="STANDARD" schema="postgres" session="Main" />
     </connection>
   </component>
   <component name="DBNavigator.Project.DatabaseEditorStateManager">
@@ -23,11 +23,13 @@
     <open-files />
   </component>
   <component name="DBNavigator.Project.DatasetFilterManager">
-    <filter-actions connection-id="d9c35fdd-c292-453c-a6ac-67919770ba9d" dataset="public.dish_ingredient" active-filter-id="" />
-    <filter-actions connection-id="d9c35fdd-c292-453c-a6ac-67919770ba9d" dataset="public.dish" active-filter-id="EMPTY_FILTER" />
+    <filter-actions connection-id="d880bb83-000f-42e1-b6f4-f43220069e09" dataset="public.ingredient" active-filter-id="" />
   </component>
   <component name="DBNavigator.Project.ExecutionManager">
     <retain-sticky-names value="false" />
+  </component>
+  <component name="DBNavigator.Project.FileConnectionMappingManager">
+    <mapping file-url="file://$PROJECT_DIR$/src/db/db.testdata/6_test_data_order.sql" connection-id="d880bb83-000f-42e1-b6f4-f43220069e09" session-id="MAIN" current-schema="public" />
   </component>
   <component name="DBNavigator.Project.MethodExecutionManager">
     <method-browser />
@@ -41,22 +43,25 @@
     <last-used-operator value="EQUAL" />
     <filters />
   </component>
+  <component name="DBNavigator.Project.ParserDiagnosticsManager">
+    <diagnostics-history />
+  </component>
   <component name="DBNavigator.Project.Settings">
     <connections>
-      <connection id="d9c35fdd-c292-453c-a6ac-67919770ba9d" active="true" signed="true">
+      <connection id="d880bb83-000f-42e1-b6f4-f43220069e09" active="true" signed="true">
         <database>
           <name value="Connection" />
           <description value="" />
           <database-type value="POSTGRES" />
           <config-type value="BASIC" />
-          <database-version value="14.15" />
+          <database-version value="14.17" />
           <driver-source value="BUNDLED" />
           <driver-library value="" />
           <driver value="" />
           <url-type value="DATABASE" />
           <host value="localhost" />
           <port value="5432" />
-          <database value="postgres" />
+          <database value="restaurant_management" />
           <tns-folder value="" />
           <tns-profile value="" />
           <type value="USER_PASSWORD" />

@@ -1,0 +1,1 @@
+insert into orders(id, creation_date, order_references) values(1, '2025/02/25', 'order1');

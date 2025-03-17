@@ -1,4 +1,4 @@
--- Step 1: Drop the user if it already exists
+	-- Step 1: Drop the user if it already exists
 drop user IF EXISTS dyferherios;
 
 -- Step 2: Create the user with the desired password
@@ -11,28 +11,18 @@ drop database IF EXISTS restaurant_management;
 
 -- Step 4: Create the database
 create DATABASE restaurant_management;
-
--- Step 5: Grant the user permission to connect to the database
 grant connect on DATABASE restaurant_management TO dyferherios;
-
--- Step 6: Grant usage on a specific schema (replace `schema` with your schema name)
 grant USAGE on SCHEMA public TO dyferherios;
-
-\dn --check shema
--- Step 7: Grant table-level privileges (replace `schema` with your schema name)
 grant
 select, insert,
 update, delete on ALL TABLES IN SCHEMA public TO dyferherios;
-
 grant USAGE on ALL SEQUENCES IN SCHEMA public TO dyferherios;
-
 grant REFERENCES on ALL TABLES IN SCHEMA public TO dyferherios;
-
--- Step 8: (Optional) Automatically grant privileges for future tables in the schema
 alter DEFAULT PRIVILEGES IN SCHEMA public
 grant
 select, insert,
 update, delete on TABLES to dyferherios;
+GRANT USAGE, SELECT ON SEQUENCE stock_movement_id_seq TO dyferherios;
 
 
 -- Find the process IDs of the sessions connected to the database:
