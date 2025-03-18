@@ -1,6 +1,6 @@
 package dao.operations;
 
-import dao.entity.Criteria.Criteria;
+import dao.entity.Criteria;
 import db.DataSource;
 import dao.entity.Price;
 import lombok.SneakyThrows;
@@ -10,6 +10,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class PriceCrudOperations implements CrudOperations<Price> {
     private final DataSource dataSource = new DataSource();
@@ -27,26 +28,26 @@ public class PriceCrudOperations implements CrudOperations<Price> {
     public List<Price> filterByIngredientIdAndCriteria(Long ingredientId, List<Criteria> criterias, Map<String, String> sort){
         List<Price> prices = new ArrayList<>();
         StringBuilder query = new StringBuilder("select distinct p.id, p.id_ingredient, p.amount, p.date_value from price p ");
-        if (!criterias.isEmpty()) {
+        List<String> criteriaKey = criterias.stream()
+                .map(Criteria::getKey)
+                .toList();
+        List<String> targetKeys = List.of("amount", "date");
+        if (criteriaKey.stream().anyMatch(targetKeys::contains)) {
             query.append(" where ");
             for (Criteria criteria : criterias) {
                 StringBuilder conditions = new StringBuilder();
                 if (criteria.getValue() instanceof Date || criteria.getValue() instanceof LocalDate) {
-                    conditions.append("p.date_value").append(" ").append(criteria.getOperation()).append(" '").append(criteria.getValue()).append("'");
+                    conditions.append("p.date_value").append(" ").append(criteria.getOperation()).append(" '").append(criteria.getValue()).append("' ");
+                    query.append(conditions).append(" ").append(criteria.getConjunction().toLowerCase()).append(" ");
                 } else if ("amount".equals(criteria.getKey())) {
                     conditions.append("p.amount").append(" ").append(criteria.getOperation()).append(" ").append(criteria.getValue());
-                }
-                query.append(conditions);
-                if(criterias.indexOf(criteria) < criterias.size()-1){
-                    query.append(" ").append(criteria.getConjunction().toLowerCase()).append(" ");
+                    query.append(conditions).append(" ").append(criteria.getConjunction().toLowerCase()).append(" ");
                 }
             }
-
+            query.append(" p.id_ingredient=").append(ingredientId);
+        }else{
+            query.append(" where p.id_ingredient=").append(ingredientId);
         }
-
-        query.append(" and p.id_ingredient=").append(ingredientId);
-
-        System.out.println(query.toString());
 
         if (!sort.isEmpty()) {
             query.append(" order by ");

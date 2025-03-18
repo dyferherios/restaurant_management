@@ -1,6 +1,6 @@
 package dao.operations;
 
-import dao.entity.Criteria.Criteria;
+import dao.entity.Criteria;
 import db.DataSource;
 import dao.entity.*;
 
@@ -34,28 +34,32 @@ public class StockMovementCrudOperations implements CrudOperations<StockMovement
     public List<StockMovement> filterByIngredientIdByCriteria(Long ingredientId, List<Criteria> criterias, Map<String, String> sort) {
         List<StockMovement> movements = new ArrayList<>();
         StringBuilder query = new StringBuilder("select distinct sm.id, sm.movement_type, sm.quantity, sm.creation_datetime, sm.unit from stock_movement sm ");
-        if (!criterias.isEmpty()) {
+        List<String> criteriaKey = criterias.stream()
+                .map(Criteria::getKey)
+                .toList();
+        List<String> targetKeys = List.of("movement_type", "quantity", "date", "unit");
+        if (criteriaKey.stream().anyMatch(targetKeys::contains)) {
             query.append(" where ");
             for (Criteria criteria : criterias) {
                 StringBuilder conditions = new StringBuilder();
                 if (criteria.getValue() instanceof Date || criteria.getValue() instanceof LocalDate) {
                     conditions.append("sm.creation_datetime").append(" ").append(criteria.getOperation()).append(" '").append(criteria.getValue()).append("'");
+                    query.append(conditions).append(" ").append(criteria.getConjunction().toLowerCase()).append(" ");
                 } else if(criteria.getValue() instanceof String) {
                     if("movement_type".equals(criteria.getKey()) || "unit".equals(criteria.getKey())){
                         conditions.append("sm.").append(criteria.getKey()).append("::TEXT ").append(criteria.getOperation()).append(" '%").append(criteria.getValue()).append("%' ").append(" ");
+                        query.append(conditions).append(" ").append(criteria.getConjunction().toLowerCase()).append(" ");
                     }
-                } else if (criteria.getValue() instanceof Double || criteria.getValue() instanceof Integer) {
+                } else if ("quantity".equals(criteria.getKey())) {
                     conditions.append("sm.").append(criteria.getKey()).append(" ").append(criteria.getOperation()).append(" ").append(criteria.getValue());
-                }
-                query.append(conditions);
-                if(criterias.indexOf(criteria) < criterias.size()-1){
-                    query.append(" ").append(criteria.getConjunction().toLowerCase()).append(" ");
+                    query.append(conditions).append(" ").append(criteria.getConjunction().toLowerCase()).append(" ");
                 }
 
             }
+            query.append(" sm.id_ingredient=").append(ingredientId);
+        }else{
+            query.append(" where sm.id_ingredient=").append(ingredientId);
         }
-
-        query.append(" and sm.id_ingredient=").append(ingredientId);
 
         if (!sort.isEmpty()) {
             query.append(" order by ");

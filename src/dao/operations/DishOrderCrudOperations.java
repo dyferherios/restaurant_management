@@ -1,6 +1,6 @@
 package dao.operations;
 
-import dao.entity.Criteria.Criteria;
+import dao.entity.Criteria;
 import dao.entity.DishOrder;
 import dao.entity.Status;
 import db.DataSource;

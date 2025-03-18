@@ -1,6 +1,6 @@
 package dao.operations;
 
-import dao.entity.Criteria.Criteria;
+import dao.entity.Criteria;
 import dao.entity.Dish;
 import dao.entity.DishIngredient;
 import db.DataSource;
@@ -38,7 +38,7 @@ public class DishCrudOperations implements CrudOperations<Dish> {
 
     @Override
     public List<Dish> filterByCriteria(List<Criteria> criterias, int page, int size, Map<String, String> sort) {
-        return List.of();
+        throw new UnsupportedOperationException("Not supported yet");
     }
 
     private Dish mapFromResultSet(ResultSet resultSet) throws SQLException {

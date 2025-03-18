@@ -52,6 +52,8 @@ public class Dish {
             Ingredient ingredient = dishIngredient.getIngredient();
             double quantityPossibleForThatIngredient = ingredient.getAvailableQuantity() / dishIngredient.getRequiredQuantity();
             double roundedQuantityPossible = Math.ceil(quantityPossibleForThatIngredient); // ceil for smallest
+            System.out.println(roundedQuantityPossible);
+            System.out.println(ingredient.toString());
             allQuantitiesPossible.add(roundedQuantityPossible);
         }
         return allQuantitiesPossible.stream().min(Double::compare).orElse(0.0);

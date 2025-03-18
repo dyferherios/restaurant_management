@@ -1,12 +1,11 @@
 package dao.operations;
 
-import dao.entity.Criteria.Criteria;
+import dao.entity.Criteria;
 import db.DataSource;
 import dao.entity.*;
 import lombok.SneakyThrows;
 
 import java.sql.*;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -55,69 +54,50 @@ public class IngredientCrudOperations implements CrudOperations<Ingredient> {
     @Override
     public List<Ingredient> filterByCriteria(List<Criteria> criterias, int page, int size, Map<String, String> sort) {
         List<Ingredient> ingredients = new ArrayList<>();
+        List<String> criteriaKey = criterias.stream()
+                .map(Criteria::getKey)
+                .toList();
+        List<String> targetKeys = List.of("id", "name");
         try(Connection connection = dataSource.getConnection()){
-            StringBuilder query = new StringBuilder("select distinct i.id, i.name from ingredient i ");
             if (!criterias.isEmpty()) {
-                query.append(" where ");
-                List<String> conditions = new ArrayList<>();
                 List<Long> ingredientsId = new ArrayList<>();
+                Statement statement = connection.createStatement();
                 for (Criteria criteria : criterias) {
-                    if("name".equals(criteria.getKey())){
-                        Statement statement = connection.createStatement();
-                        ResultSet resultSet = statement.executeQuery("select id from ingredient where name ilike '%" + criteria.getValue() +"'%");
+                    if (criteriaKey.stream().noneMatch(targetKeys::contains)){
+                        ResultSet resultSet = statement.executeQuery("select id from ingredient limit "+size+" offset "+size*(page-1));
                         while(resultSet.next()){
                             ingredientsId.add(resultSet.getLong("id"));
                         }
-                        criterias.remove(criteria);
+                        break;
+                    }
+                    if("name".equals(criteria.getKey())){
+                        ResultSet resultSet = statement.executeQuery("select id from ingredient where name ilike '%" + criteria.getValue() +"%' limit "+size+" offset "+size*(page-1));
+                        while(resultSet.next()){
+                            ingredientsId.add(resultSet.getLong("id"));
+                        }
                     } else if("id".equals(criteria.getKey())){
                         ingredientsId.add((Long) criteria.getValue());
-                        criterias.remove(criteria);
                     }
                 }
-
-
-
-                query.append(String.join(" " + criterias.get(0).getConjunction() + " ", conditions));
-            }
-
-            if (!sort.isEmpty()) {
-                query.append(" ORDER BY ");
-                List<String> orderClauses = sort.entrySet().stream()
-                        .map(entry -> "i." + entry.getKey() + " " + entry.getValue())
-                        .toList();
-                query.append(String.join(", ", orderClauses));
-            }
-
-            query.append(" LIMIT ? OFFSET ?");
-
-            try (PreparedStatement preparedStatement = connection.prepareStatement(query.toString())) {
-                int index = 1;
-                for (Criteria criteria : criterias) {
-                    if (criteria.getValue() instanceof String) {
-                        preparedStatement.setString(index++, criteria.getOperation().equalsIgnoreCase("LIKE") ? "%" + criteria.getValue() + "%" : (String) criteria.getValue());
-                    } else if (criteria.getValue() instanceof Double) {
-                        preparedStatement.setDouble(index++, (Double) criteria.getValue());
-                    } else if (criteria.getValue() instanceof LocalDate) {
-                        preparedStatement.setDate(index++, Date.valueOf((LocalDate) criteria.getValue()));
+                criterias = criterias.stream().filter(criteria -> !"id".equals(criteria.getKey()) && !"name".equals(criteria.getKey())).toList();
+                for(Long id : ingredientsId){
+                    Ingredient ingredient = new Ingredient();
+                    ingredient.setId(id);
+                    ingredient.setName(findById(id).getName());
+                    List<Price> prices = priceCrudOperations.filterByIngredientIdAndCriteria(id, criterias, sort);
+                    ingredient.setPrices(prices);
+                    List<StockMovement> stockMovements = stockMovementCrudOperations.filterByIngredientIdByCriteria(id, criterias, sort);
+                    ingredient.setStockMovements(stockMovements);
+                    if(prices.isEmpty() || stockMovements.isEmpty()){
+                        continue;
+                    }else{
+                        ingredients.add(ingredient);
                     }
                 }
-
-                preparedStatement.setInt(index++, size);
-                preparedStatement.setInt(index, size * (page - 1));
-                System.out.println(preparedStatement);
-                ResultSet resultSet = preparedStatement.executeQuery();
-                while (resultSet.next()) {
-                    ingredients.add(mapFromResultSet(resultSet));
-                }
-            } catch (Exception e) {
-                throw new RuntimeException(e);
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
-
-
+           } catch (Exception e) {
+               throw new RuntimeException(e);
+           }
         return ingredients;
     }
 

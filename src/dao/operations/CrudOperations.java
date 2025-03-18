@@ -1,6 +1,6 @@
 package dao.operations;
 
-import dao.entity.Criteria.Criteria;
+import dao.entity.Criteria;
 import dao.entity.Ingredient;
 
 import java.sql.SQLException;

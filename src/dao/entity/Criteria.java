@@ -1,4 +1,4 @@
-package dao.entity.Criteria;
+package dao.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

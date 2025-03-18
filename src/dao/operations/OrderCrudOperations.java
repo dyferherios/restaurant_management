@@ -1,10 +1,11 @@
 package dao.operations;
 
-import dao.entity.Criteria.Criteria;
+import dao.entity.Criteria;
 import dao.entity.DishOrder;
 import dao.entity.Order;
 import dao.entity.Status;
 import db.DataSource;
+import org.junit.platform.commons.function.Try;
 
 import java.sql.*;
 import java.time.Instant;
@@ -66,11 +67,19 @@ public class OrderCrudOperations implements CrudOperations<Order> {
 
     @Override
     public List<Order> filterByCriteria(List<Criteria> criterias, int page, int size, Map<String, String> sort) {
-        return List.of();
+        throw new UnsupportedOperationException("Not supported yet");
     }
 
     @Override
     public List<Order> saveAll(List<Order> entities) {
+        List<Order> orders = new ArrayList<>();
+        try(Connection connection = dataSource.getConnection();
+            PreparedStatement preparedStatement = connection.prepareStatement("insert into order ")) {
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
         return List.of();
     }
 
