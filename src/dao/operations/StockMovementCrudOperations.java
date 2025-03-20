@@ -87,7 +87,7 @@ public class StockMovementCrudOperations implements CrudOperations<StockMovement
         List<StockMovement> stockMovements = new ArrayList<>();
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement =
-                     connection.prepareStatement("insert into stock_movement (id, quantity, unit, movement_type, creation_datetime, id_ingredient) values (?, ?, ?, ?, ?, ?)"
+                     connection.prepareStatement("insert into stock_movement (id, quantity, unit, movement_type, creation_datetime, id_ingredient) values (?, ?, ?::unit, ?::stock_movement_type, ?, ?)"
                              + " on conflict (id) do nothing"
                              + " returning id, quantity, unit, movement_type, creation_datetime, id_ingredient")) {
             entities.forEach(entityToSave -> {

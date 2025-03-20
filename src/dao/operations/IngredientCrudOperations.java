@@ -107,18 +107,27 @@ public class IngredientCrudOperations implements CrudOperations<Ingredient> {
         List<Ingredient> ingredients = new ArrayList<>();
         try (Connection connection = dataSource.getConnection()) {
             try (PreparedStatement statement =
-                         connection.prepareStatement("insert into ingredient (name) values (?)"
-                                 + " on conflict (id) do update set name=excluded.name?"
+                         connection.prepareStatement("insert into ingredient (id, name) values (?, ?)"
+                                 + " on conflict (id) do update set name=excluded.name"
                                  + " returning id, name")) {
                 entities.forEach(entityToSave -> {
                     try {
-                        statement.setString(1, entityToSave.getName());
+                        statement.setLong(1, entityToSave.getId());
+                        statement.setString(2, entityToSave.getName());
                         statement.addBatch();
                     } catch (SQLException e) {
                         throw new RuntimeException(e);
                     }
                 });
                 try (ResultSet resultSet = statement.executeQuery()) {
+                    entities.forEach(entityToSave -> {
+                        try {
+                            priceCrudOperations.saveAll(entityToSave.getPrices());
+                            stockMovementCrudOperations.saveAll(entityToSave.getStockMovements());
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
                     while (resultSet.next()) {
                         ingredients.add(mapFromResultSet(resultSet));
                     }
