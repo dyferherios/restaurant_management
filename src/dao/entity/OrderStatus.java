@@ -21,8 +21,6 @@ public class OrderStatus {
         return "OrderStatus{" +
                 "id=" + id +
                 ", status=" + status +
-                // Don't include full Order object
-                ", orderId=" + (order != null ? order.getId() : null) +
                 '}';
     }
 

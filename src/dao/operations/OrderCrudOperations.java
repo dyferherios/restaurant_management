@@ -96,17 +96,9 @@ public class OrderCrudOperations implements CrudOperations<Order> {
             }
 
             for(Order order: entities){
-                if(Status.CONFIRMED.equals(order.getOrderStatus().getLast().getStatus())){
-                    order.getDishesOrder().forEach(dishOrder -> {
-                        if(dishOrder.getDish().getAvailableQuantity() < dishOrder.getQuantity()){
-                            throw new RuntimeException("Stock not enough for this dish : " + dishOrder.getDish().getAvailableQuantity());
-                        }
-                    });
-                }
-                dishOrderCrudOperations.saveAll(order.getDishesOrder());
-
                 if(order.getOrderStatus()!=null  && !order.getOrderStatus().isEmpty()){
                     saveAllOrderStatus(order.getOrderStatus().getLast());
+                    dishOrderCrudOperations.saveAll(order.getDishesOrder());
                 }
                 if(!order.getDishesOrder().isEmpty()){
                     order.getDishesOrder().forEach(this::saveDishOrderStatus);

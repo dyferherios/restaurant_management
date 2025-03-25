@@ -82,12 +82,13 @@ public class DishOrderCrudOperations implements CrudOperations<DishOrder> {
                     dishOrder.setDish(dishCrudOperations.findById(resultSet.getLong("id_dish")));
                     dishOrder.setQuantity(resultSet.getDouble("quantity"));
                     dishOrder.setOrderStatus(mapDishOrderStatus(dishOrderId));
+                    return dishOrder;
                 }
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        return dishOrder;
+        return null;
     }
 
     @Override
@@ -137,10 +138,8 @@ public class DishOrderCrudOperations implements CrudOperations<DishOrder> {
 
     private List<DishOrder> executeBatch(Connection conn, String sql, List<DishOrder> entities, boolean hasId)
             throws SQLException {
-
         List<DishOrder> savedEntities = new ArrayList<>();
         List<DishOrder> currentValues = new ArrayList<>();
-
         try (PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             for (DishOrder entity : entities) {
                 DishOrder tmpDishOrder = this.findByIdOrderAndIdDish(entity.getOrder().getId(), entity.getDish().getId());
@@ -159,7 +158,6 @@ public class DishOrderCrudOperations implements CrudOperations<DishOrder> {
 
                 stmt.addBatch();
             }
-
 
             int[] affectedRows = stmt.executeBatch();
 
@@ -209,7 +207,6 @@ public class DishOrderCrudOperations implements CrudOperations<DishOrder> {
                 dishOrder.getDish().getDishIngredients().forEach(dishIngredient -> {
                     double totalRequiredQuantity = dishIngredient.getRequiredQuantity() * quantityDifference;
                     StockMovementType movementType = dishOrder.getQuantity() > 0 ? StockMovementType.OUT : StockMovementType.IN;
-
                     StockMovement stockMovement = new StockMovement(
                             dishIngredient.getIngredient(),
                             totalRequiredQuantity,
@@ -217,12 +214,9 @@ public class DishOrderCrudOperations implements CrudOperations<DishOrder> {
                             movementType,
                             Instant.now()
                     );
-
-                    // Enregistrer le mouvement de stock
                     stockMovementCrudOperations.saveAll(List.of(stockMovement));
                 });
             } else {
-                // Si le plat existe déjà dans currentValues, vérifier si la quantité a changé
                 if (isQuantityChanged(dishOrder, current)) {
                     addStockMovementForChangedQuantity(dishOrder, current);
                 }
@@ -236,11 +230,9 @@ public class DishOrderCrudOperations implements CrudOperations<DishOrder> {
 
     private void addStockMovementForChangedQuantity(DishOrder dishOrder, DishOrder current) {
         StockMovementType movementType = dishOrder.getQuantity() > current.getQuantity() ? StockMovementType.OUT : StockMovementType.IN;
-
         dishOrder.getDish().getDishIngredients().forEach(dishIngredient -> {
             double quantityDifference = Math.abs(dishOrder.getQuantity() - current.getQuantity());
             double totalRequiredQuantity = dishIngredient.getRequiredQuantity() * quantityDifference;
-
             StockMovement stockMovement = new StockMovement(
                     dishIngredient.getIngredient(),
                     totalRequiredQuantity,
@@ -248,8 +240,6 @@ public class DishOrderCrudOperations implements CrudOperations<DishOrder> {
                     movementType,
                     Instant.now()
             );
-
-            // Enregistrer le mouvement de stock
             stockMovementCrudOperations.saveAll(List.of(stockMovement));
         });
     }

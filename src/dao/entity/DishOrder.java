@@ -33,8 +33,7 @@ public class DishOrder {
     public String toString() {
         return "DishOrder{" +
                 "id=" + id +
-                ", dish=" + (dish != null ? dish : null) +
-                ", order=" + (order != null ? order : null) +
+                ", dish=" + (dish) +
                 ", quantity=" + quantity +
                 '}';
     }

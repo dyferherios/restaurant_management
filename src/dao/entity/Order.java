@@ -81,8 +81,8 @@ public class Order {
                 ", references='" + references + '\'' +
                 ", creationDate=" + creationDate +
                 ", amount=" + amount +
-                ", statusCount=" + (orderStatus != null ? orderStatus.size() : 0) +
-                ", dishesCount=" + (dishesOrder != null ? dishesOrder.size() : 0) +
+                ", statusCount=" + (orderStatus) +
+                ", dishesCount=" + (dishesOrder) +
                 '}';
     }
 
