@@ -1,9 +1,6 @@
 package dao.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -14,6 +11,8 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 @Data
+@Getter
+@Setter
 public class Dish {
     private Long id;
     private String name;
@@ -52,8 +51,6 @@ public class Dish {
             Ingredient ingredient = dishIngredient.getIngredient();
             double quantityPossibleForThatIngredient = ingredient.getAvailableQuantity() / dishIngredient.getRequiredQuantity();
             double roundedQuantityPossible = Math.ceil(quantityPossibleForThatIngredient); // ceil for smallest
-            System.out.println(roundedQuantityPossible);
-            System.out.println(ingredient.toString());
             allQuantitiesPossible.add(roundedQuantityPossible);
         }
         return allQuantitiesPossible.stream().min(Double::compare).orElse(0.0);

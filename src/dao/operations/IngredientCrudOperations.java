@@ -112,6 +112,7 @@ public class IngredientCrudOperations implements CrudOperations<Ingredient> {
                                  + " returning id, name")) {
                 entities.forEach(entityToSave -> {
                     try {
+
                         statement.setLong(1, entityToSave.getId());
                         statement.setString(2, entityToSave.getName());
                         statement.addBatch();

@@ -85,33 +85,45 @@ public class StockMovementCrudOperations implements CrudOperations<StockMovement
     @Override
     public List<StockMovement> saveAll(List<StockMovement> entities) {
         List<StockMovement> stockMovements = new ArrayList<>();
-        try (Connection connection = dataSource.getConnection();
-             PreparedStatement statement =
-                     connection.prepareStatement("insert into stock_movement (id, quantity, unit, movement_type, creation_datetime, id_ingredient) values (?, ?, ?::unit, ?::stock_movement_type, ?, ?)"
-                             + " on conflict (id) do nothing"
-                             + " returning id, quantity, unit, movement_type, creation_datetime, id_ingredient")) {
-            entities.forEach(entityToSave -> {
-                try {
-                    statement.setLong(1, entityToSave.getId());
-                    statement.setDouble(2, entityToSave.getQuantity());
-                    statement.setString(3, entityToSave.getUnit().name());
-                    statement.setString(4, entityToSave.getMovementType().name());
-                    statement.setTimestamp(5, Timestamp.from(now()));
-                    statement.setLong(6, entityToSave.getIngredient().getId());
-                    statement.addBatch(); // group by batch so executed as one query in database
+
+        try (Connection connection = dataSource.getConnection()) {
+            for (StockMovement entityToSave : entities) {
+                String sql;
+                if (entityToSave.getId() == null) {
+                    sql = "INSERT INTO stock_movement (quantity, unit, movement_type, creation_datetime, id_ingredient) " +
+                            "VALUES (?, ?::unit, ?::stock_movement_type, ?, ?) " +
+                            "RETURNING id, quantity, unit, movement_type, creation_datetime, id_ingredient;";
+                } else {
+                    sql = "INSERT INTO stock_movement (id, quantity, unit, movement_type, creation_datetime, id_ingredient) " +
+                            "VALUES (?, ?, ?::unit, ?::stock_movement_type, ?, ?) " +
+                            "ON CONFLICT (id) DO NOTHING " +
+                            "RETURNING id, quantity, unit, movement_type, creation_datetime, id_ingredient;";
+                    }
+                try (PreparedStatement statement = connection.prepareStatement(sql)) {
+                    int parameterIndex = 1;
+                    if (entityToSave.getId() != null) {
+                        statement.setLong(parameterIndex++, entityToSave.getId());
+                    }
+                    statement.setDouble(parameterIndex++, entityToSave.getQuantity());
+                    statement.setString(parameterIndex++, entityToSave.getUnit().name());
+                    statement.setString(parameterIndex++, entityToSave.getMovementType().name());
+                    statement.setTimestamp(parameterIndex++, Timestamp.from(entityToSave.getCreationDatetime()));
+                    statement.setLong(parameterIndex, entityToSave.getIngredient().getId());
+
+                    try (ResultSet resultSet = statement.executeQuery()) {
+                        if (resultSet.next()) {
+                            StockMovement savedStockMovement = mapFromResultSet(resultSet);
+                            stockMovements.add(savedStockMovement);
+                        }
+                    }
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
                 }
-            });
-            try (ResultSet resultSet = statement.executeQuery()) {
-                while (resultSet.next()) {
-                    stockMovements.add(mapFromResultSet(resultSet));
-                }
             }
-            return stockMovements;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+        return stockMovements;
     }
 
     public List<StockMovement> findByIdIngredient(Long idIngredient) {

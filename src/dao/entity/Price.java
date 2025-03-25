@@ -1,9 +1,6 @@
 package dao.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDate;
 
@@ -13,6 +10,8 @@ import static java.time.LocalDate.now;
 @NoArgsConstructor
 @Builder
 @Data
+@Getter
+@Setter
 public class Price {
     private Long id;
     private Ingredient ingredient;

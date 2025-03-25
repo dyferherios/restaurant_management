@@ -17,3 +17,7 @@ create table if not exists stock_movement
     id_ingredient     bigint,
     constraint fk_stock_movement_id_ingredient foreign key (id_ingredient) references ingredient (id)
 );
+
+ALTER TABLE stock_movement
+ALTER COLUMN id SET DATA TYPE BIGINT,
+ALTER COLUMN id SET DEFAULT nextval('stock_movement_id_seq'::regclass);

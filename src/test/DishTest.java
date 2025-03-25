@@ -15,16 +15,14 @@ public class DishTest {
     @Test
     public void get_total_ingredients_cost_OK() {
         Dish hotDog = subject.findById(1L);
-
-        //assertEquals(5500.0, hotDog.getTotalIngredientsCost());
-        assertEquals(5700.0, hotDog.getTotalIngredientsCost());
+        assertEquals(5500.0, hotDog.getTotalIngredientsCost());
     }
 
     @Test
     public void get_available_quantity_OK(){
         Dish dish = subject.findById(1L);
         assertNotNull(dish);
-        assertEquals(5.0, dish.getAvailableQuantity());
+        assertEquals(30.0, dish.getAvailableQuantity());
     }
 
     @Test

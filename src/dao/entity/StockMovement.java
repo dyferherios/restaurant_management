@@ -1,9 +1,6 @@
 package dao.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.Instant;
 
@@ -11,6 +8,8 @@ import java.time.Instant;
 @NoArgsConstructor
 @Builder
 @Data
+@Getter
+@Setter
 public class StockMovement {
     private Long id;
     private Ingredient ingredient;
@@ -18,4 +17,12 @@ public class StockMovement {
     private Unit unit;
     private StockMovementType movementType;
     private Instant creationDatetime;
+
+    public StockMovement(Ingredient ingredient, Double quantity, Unit unit, StockMovementType movementType, Instant creationDatetime) {
+        this.ingredient = ingredient;
+        this.quantity = quantity;
+        this.unit = unit;
+        this.movementType = movementType;
+        this.creationDatetime = creationDatetime;
+    }
 }

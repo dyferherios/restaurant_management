@@ -48,17 +48,22 @@ public class Main {
 //        List<StockMovement> stockMovements = stockMovementCrudOperations.filterByIngredientIdByCriteria(1L, stockMovementsCriteria, mapPrice);
 //        System.out.println(stockMovements.toString());
 
-        List<Criteria> criteria = List.of(
-                new Criteria("date", LocalDate.of(2025,3,17),"<=",  "AND"),
-                new Criteria("date",LocalDate.of(2025,2,1), ">=", "AND"),
-                new Criteria("amount", 1000.0, ">=", "AND")
-        );
+//        List<Criteria> criteria = List.of(
+//                new Criteria("date", LocalDate.of(2025,3,17),"<=",  "AND"),
+//                new Criteria("date",LocalDate.of(2025,2,1), ">=", "AND"),
+//                new Criteria("amount", 1000.0, ">=", "AND")
+//        );
+//
+//        Map<String, String> sort = Map.of();
+//
+//        List<Ingredient> result = ingredientCrudOperations.filterByCriteria(criteria, 1, 3, sort);
+//        result.forEach(ingredient -> System.out.println(ingredient.toString()));
 
-        Map<String, String> sort = Map.of();
-
-        List<Ingredient> result = ingredientCrudOperations.filterByCriteria(criteria, 1, 3, sort);
-        result.forEach(ingredient -> System.out.println(ingredient.toString()));
-
+//        DishOrderCrudOperations dishOrderCrudOperations = new DishOrderCrudOperations();
+//
+//        dishOrderCrudOperations.getAllDishInsideAnOrder(1L).forEach(dishOrder -> System.out.println(dishOrder.toString()));
+//        System.out.println("test");
+        //System.out.println(dishOrderCrudOperations.findOrderOfOneDishOrder(1L).toString());;
     }
 }
 //  

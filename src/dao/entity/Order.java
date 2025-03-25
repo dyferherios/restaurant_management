@@ -1,36 +1,60 @@
 package dao.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.Duration;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 @Data
+@Getter
+@Setter
 public class Order {
     private Long id;
     private String references;
     private Date creationDate;
     private Double amount;
-    private List<DishOrder> dishesOrder;
-    private List<Status> orderStatus;
+    @Builder.Default
+    private List<DishOrder> dishesOrder = new ArrayList<>();
 
-    public Status getActualStatus(){
-        return this.orderStatus.getLast();
+    @Builder.Default
+    private List<OrderStatus> orderStatus = new ArrayList<>();
+
+    public void addDishOrder(DishOrder newDishOrder) {
+        this.dishesOrder.add(newDishOrder);
+        setDishesOrder(this.dishesOrder);
     }
+
+    public void addOrderStatus(OrderStatus newOrderStatus){
+        this.orderStatus.add(newOrderStatus);
+        setOrderStatus(this.orderStatus);
+    }
+
+
+    public void setDishesOrder(List<DishOrder> dishesOrder){
+        this.dishesOrder = dishesOrder;
+        dishesOrder.forEach(dishOrder -> dishOrder.setOrder(this));
+    }
+
+    public void setOrderStatus(List<OrderStatus> orderStatus) {
+        this.orderStatus = orderStatus;
+        if (orderStatus != null) {
+            orderStatus.forEach(status -> status.setOrder(this));
+        }
+    }
+
+    public Status getActualStatus() {
+        List<OrderStatus> statuses = getOrderStatus();
+        return statuses.getLast().getStatus();
+    }
+
 
     public HashMap<Dish, Status> getDishOrderWithActualStatus(){
         HashMap<Dish, Status> dishOrderStatus = new HashMap<>();
-        this.dishesOrder.forEach(dishOrder -> dishOrderStatus.put(dishOrder.getDish(), dishOrder.getDishStatus().getLast()));
+        this.dishesOrder.forEach(dishOrder -> dishOrderStatus.put(dishOrder.getDish(), dishOrder.getOrderStatus().getLast().getStatus()));
         return dishOrderStatus;
     }
 
@@ -41,7 +65,7 @@ public class Order {
     }
 
     public Duration getPreparationTime(){
-        return Duration.between(dishesOrder.getLast().getStatusDate().getFirst(), dishesOrder.getLast().getStatusDate().getLast());
+        return Duration.between(orderStatus.getFirst().getStatusDate(), orderStatus.getLast().getStatusDate());
     }
 
     public String getOneDish(List<DishOrder> dishOrders, String dishName){
@@ -49,4 +73,17 @@ public class Order {
                 .filter(dishOrder -> dishOrder.getDish() != null && dishOrder.getDish().getName().equalsIgnoreCase(dishName))
                 .findFirst().get().getDish().getName();
     }
+
+    @Override
+    public String toString() {
+        return "Order{" +
+                "id=" + id +
+                ", references='" + references + '\'' +
+                ", creationDate=" + creationDate +
+                ", amount=" + amount +
+                ", statusCount=" + (orderStatus != null ? orderStatus.size() : 0) +
+                ", dishesCount=" + (dishesOrder != null ? dishesOrder.size() : 0) +
+                '}';
+    }
+
 }

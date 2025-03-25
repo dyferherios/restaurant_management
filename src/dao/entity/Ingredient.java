@@ -1,9 +1,6 @@
 package dao.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -18,6 +15,8 @@ import static dao.entity.StockMovementType.OUT;
 @NoArgsConstructor
 @Builder
 @Data
+@Getter
+@Setter
 public class Ingredient {
     private Long id;
     private String name;

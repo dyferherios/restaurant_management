@@ -68,7 +68,7 @@ public class DishCrudOperations implements CrudOperations<Dish> {
                         statement.setLong(1, entityToSave.getId());
                         statement.setString(2, entityToSave.getName());
                         statement.setDouble(3, entityToSave.getPrice());
-                        statement.addBatch(); // group by batch so executed as one query in database
+                        statement.addBatch();
                     } catch (SQLException e) {
                         throw new RuntimeException(e);
                     }
